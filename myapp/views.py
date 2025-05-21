@@ -4,7 +4,7 @@ from .models import*
 # Create your views here.
 
 def home(request):
-    return HttpResponse("hello")
+    return HttpResponse("hello python")
 
 def index(request):
     pid=Product.objects.all()[:8]
