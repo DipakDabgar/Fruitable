@@ -49,15 +49,18 @@
                             </div>
                             <div class="col-6"></div>
                             <div class="col-xl-3">
+                                <form method="get" action="{% url 'shop' %}"  id="fruitform" >
                                 <div class="bg-light ps-3 py-3 rounded d-flex justify-content-between mb-4">
                                     <label for="fruits">Default Sorting:</label>
-                                    <select id="fruits" name="fruitlist" class="border-0 form-select-sm bg-light me-3" form="fruitform">
-                                        <option value="volvo">Nothing</option>
-                                        <option value="saab">Popularity</option>
-                                        <option value="opel">Organic</option>
-                                        <option value="audi">Fantastic</option>
+                                    <select id="fruits" name="sort_by" class="border-0 form-select-sm bg-light me-3" onchange="this.form.submit()">
+                                        <option>Select Option</option>
+                                        <option value="price_lth">Low to High</option>
+                                        <option value="price_htl">High to Low</option>
+                                        <option value="name_atz">A to Z</option>
+                                        <option value="name_zta">Z to A</option>
                                     </select>
                                 </div>
+                            </form>
                             </div>
                         </div>
                         <div class="row g-4">

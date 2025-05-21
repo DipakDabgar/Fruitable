@@ -216,23 +216,29 @@ def price_filter(request):
 def shop(request):
     cid=Category.objects.all()
     cat=request.GET.get("cat")
-    pid=Product.objects.all()
+    pid=Product.objects.all().order_by("-id")
     wish_count=Add_to_wishlist.objects.all().count()
     cart_count=Add_to_cart.objects.all().count()
-
+    sort_by=request.GET.get('sort_by')
     wishlist_product=Add_to_wishlist.objects.all()
     l1=[]
     for i in wishlist_product:
         l1.append(i.product_id.id)
-        
-
 
     if cat:
         pid=Product.objects.filter(cate_id=cat)
+    elif sort_by == 'price_lth':
+        pid = Product.objects.all().order_by('price')  
+    elif sort_by == 'price_htl':
+        pid = Product.objects.all().order_by('-price')  
+    elif sort_by == 'name_atz':
+        pid = Product.objects.all().order_by('name')  
+    elif sort_by == 'name_zta':
+        pid = Product.objects.all().order_by('-name') 
     else:
-        pid=Product.objects.all()
+        pid=Product.objects.all().order_by("-id")
 
-    con={"cid":cid,"pid":pid,"cat":cat,"wish_count":wish_count,"cart_count":cart_count,"l1":l1}
+    con={"cid":cid,"pid":pid,"cat":cat,"wish_count":wish_count,"cart_count":cart_count,"l1":l1,"sort_by":sort_by}
     return render(request,"shop.html",con)
     
   
