@@ -152,7 +152,15 @@ def delete_item(request,id):
 def checkout(request):
     wish_count=Add_to_wishlist.objects.all().count()
     cart_count=Add_to_cart.objects.all().count()
-    con={"wish_count":wish_count,"cart_count":cart_count}
+    check_id=Add_to_cart.objects.all()
+    total_price=0
+    for i in check_id:
+        total_price += i.product_id.price * i.quantity
+  
+
+
+
+    con={"wish_count":wish_count,"cart_count":cart_count,"check_id":check_id,"total_price":total_price}
     return render(request,"checkout.html",con)
 
 def contact(request):

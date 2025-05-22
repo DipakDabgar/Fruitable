@@ -197,7 +197,7 @@
                                     <div class="col-md-6 col-lg-6 col-xl-4">
                                         <div class="rounded position-relative fruite-item">
                                             <div class="fruite-img" style="height:300px width:300px;">
-                                                <img src="{{ i.image.url }}" class="img-fluid w-100 rounded-top" style="height:300px width:300px;" alt="">
+                                                <img src="{{ i.image.url }}" class="img-fluid w-100 rounded-top " style="height:300px width:300px;" alt="">
                                             </div>
                                             <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">Fruits</div>
                                             <div class="p-4 border border-secondary border-top-0 rounded-bottom">
@@ -217,7 +217,7 @@
                                                     {% endif %}
                                                 
                                                     <a href="{% url 'shop_detail1' i.id %}"><i class="fa fa-eye fa-2x"></i>  </a>   
-                                                    <a href="{% url 'add_cart' i.id %}"><i class="fa fa-shopping-bag me-2 text-primary fa-2x"></i></a>
+                                                    <a href="{% url 'add_cart' i.id %}"><i class="fa fa-shopping-cart me-2 text-primary fa-2x"></i></a>
 
                                                 </div>
                                              
