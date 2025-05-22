@@ -204,10 +204,9 @@
                                                 <h4>{{i.name}}</h4>
                                                 <p>{{i.dec}}</p>
                                                 <div class="d-flex justify-content-between flex-lg-wrap">
-                                                    <p class="text-dark fs-5 fw-bold mb-0">₹ {{i.price}}</p>
-                                                </div>
+                                                    <p class="text-dark fs-5 fw-bold mb-0">₹ {{i.price}}/kg</p>
                                                 
-                                                
+        
                                                     {% if i.id in l1 %}
                                                     <a href="{% url 'add_wish' i.id %}" class="">
                                                         <i class="fa fa-heart fa-2x" style="color:red;"></i></a>
@@ -220,7 +219,7 @@
                                                     <a href="{% url 'shop_detail1' i.id %}"><i class="fa fa-eye fa-2x"></i>  </a>   
                                                     <a href="{% url 'add_cart' i.id %}"><i class="fa fa-shopping-bag me-2 text-primary fa-2x"></i></a>
 
-
+                                                </div>
                                              
                                             </div>
                                         </div>
