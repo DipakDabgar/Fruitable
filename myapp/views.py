@@ -153,15 +153,48 @@ def checkout(request):
     wish_count=Add_to_wishlist.objects.all().count()
     cart_count=Add_to_cart.objects.all().count()
     check_id=Add_to_cart.objects.all()
+
     total_price=0
     for i in check_id:
         total_price += i.product_id.price * i.quantity
-  
 
-
-
-    con={"wish_count":wish_count,"cart_count":cart_count,"check_id":check_id,"total_price":total_price}
+    con={"wish_count":wish_count,"cart_count":cart_count,"check_id":check_id,"total_price":total_price,"billing_add":billing_add}
     return render(request,"checkout.html",con)
+
+
+def billing_add(request):
+
+    if request.POST:
+        first_name=request.POST["first_name"]
+        last_name=request.POST["last_name"]
+        company_name=request.POST["company_name"]
+        address=request.POST["address"]
+        city=request.POST["city"]
+        country=request.POST["country"]
+        pincode=request.POST["pincode"]
+        mobile=request.POST["mobile"]
+        email=request.POST["email"]
+        note=request.POST["note"]
+
+        if first_name and last_name and company_name and address and city and country and pincode and mobile and email and note:
+            
+            Billing_details.objects.create(first_name=first_name,
+                                   last_name=last_name,
+                                   company_name=company_name,
+                                   address=address,
+                                   city=city,
+                                   country=country,
+                                   pincode=pincode,
+                                   mobile=mobile,
+                                   email=email,
+                                   note=note)
+            return redirect("checkout")
+        return render(request,"checkout.html")
+        
+    else:
+        return render(request,"checkout.html")
+
+
 
 def contact(request):
     name=request.POST.get("name")

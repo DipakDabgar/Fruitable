@@ -9,6 +9,8 @@ admin.site.register(Product)
 admin.site.register(Contact)
 admin.site.register(Add_to_cart)
 admin.site.register(Add_to_wishlist)
+admin.site.register(Billing_details)
+
 
 
 

@@ -20,6 +20,8 @@ from .import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+  
+
     path('', views.index, name='index'),
     path('cart', views.cart, name='cart'),
     path('add_cart/<int:id>', views.add_cart, name='add_cart'),
@@ -32,6 +34,8 @@ urlpatterns = [
 
 
     path('checkout', views.checkout, name='checkout'),
+    path('billing_add', views.billing_add, name='billing_add'),
+
     path('contact', views.contact, name='contact'),
     path('error', views.error, name='error'),
     path('login', views.login, name='login'),
