@@ -73,7 +73,15 @@ def cart(request):
     for i in cate_id:
         total_price += i.product_id.price * i.quantity
 
+
     shipping_charge=50
+
+    if total_price==0:
+        shipping_charge=0
+    else:
+        shipping_charge=50
+
+    
     grand_total= total_price + shipping_charge
 
     con={"cate_id":cate_id,"wish_count":wish_count,"cart_count":cart_count,"total_price":total_price,"grand_total":grand_total,"shipping_charge":shipping_charge}
