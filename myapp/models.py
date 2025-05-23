@@ -77,6 +77,7 @@ class Billing_details(models.Model):
     mobile=models.IntegerField(blank=True,null=True)
     email=models.EmailField(blank=True,null=True)
     note=models.TextField(blank=True,null=True)
+    
 
     def __str__(self):
         return self.first_name
