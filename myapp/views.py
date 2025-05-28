@@ -14,7 +14,7 @@ def index(request):
        
         wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
         cart_count=Add_to_cart.objects.filter(user_id=uid).count()
-        con={"pid":pid,"wish_count":wish_count,"cart_count":cart_count,"cart_item":cart_item}
+        con={"pid":pid,"wish_count":wish_count,"cart_count":cart_count,"cart_item":cart_item,"uid":uid}
         return render(request,"index.html",con)
     else:
         return render(request,"login.html")
