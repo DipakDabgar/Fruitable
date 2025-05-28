@@ -6,7 +6,7 @@ from django.db import models
 class User(models.Model):
     name=models.CharField(max_length=50,blank=True,null=True)
     email=models.EmailField(unique=True,blank=True,null=True)
-    password=models.IntegerField(blank=True,null=True)
+    password=models.CharField(blank=True,null=True)
     otp=models.IntegerField(blank=True,null=True)
 
 

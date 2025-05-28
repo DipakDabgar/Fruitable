@@ -7,36 +7,50 @@ def home(request):
     return HttpResponse("hello python")
 
 def index(request):
-    pid=Product.objects.all()[:8]
-    wish_count=Add_to_wishlist.objects.all().count()
-    cart_count=Add_to_cart.objects.all().count()
-    con={"pid":pid,"wish_count":wish_count,"cart_count":cart_count}
-    return render(request,"index.html",con)
-    
+    if "email" in request.session:
+        pid=Product.objects.all()[:8]
+        uid=User.objects.get(email=request.session["email"])
+        cart_item=Add_to_cart.objects.filter(user_id=uid)
+       
+        wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
+        cart_count=Add_to_cart.objects.filter(user_id=uid).count()
+        con={"pid":pid,"wish_count":wish_count,"cart_count":cart_count,"cart_item":cart_item}
+        return render(request,"index.html",con)
+    else:
+        return render(request,"login.html")
 
 def wishlist(request):
-    wish_id=Add_to_wishlist.objects.all()
-    wish_count=Add_to_wishlist.objects.all().count()
-    cart_count=Add_to_cart.objects.all().count()
-    con={"wish_id":wish_id,"wish_count":wish_count,"cart_count":cart_count}
-    
+    if "email" in request.session:
+        uid=User.objects.get(email=request.session["email"])
+        wish_item=Add_to_wishlist.objects.filter(user_id=uid)
 
-    return render(request,"wishlist.html",con)
+        wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
+        cart_count=Add_to_cart.objects.filter(user_id=uid).count()
+        con={"wish_item":wish_item,"wish_count":wish_count,"cart_count":cart_count}
+        return render(request,"wishlist.html",con)
+    else:
+        return render(request,"login.html")
 
 def add_wish(request,id):
-    pid=Product.objects.get(id=id)
-    wish_item=Add_to_wishlist.objects.filter(product_id=pid)
-
-    if wish_item:
-        wish_item.delete()
+    if "email" in request.session:
+        uid=User.objects.get(email=request.session["email"])
+        pid=Product.objects.get(id=id)
+        wish_item=Add_to_wishlist.objects.filter(product_id=pid,user_id=uid).first()
+        
+        if wish_item:
+            wish_item.delete()
+            return redirect("shop")
+        else:
+            Add_to_wishlist.objects.create(
+                user_id=uid,
+                product_id=pid,              
+                price=pid.price,
+                name=pid.name,
+                image=pid.image,
+                )
+        return redirect("shop")
     else:
-        Add_to_wishlist.objects.create(
-            product_id=pid,
-            price=pid.price,
-            name=pid.name,
-            image=pid.image,
-            )
-    return redirect("shop")
+        return render(request,"login.html")
     
 def delete_wishlist(request,id):
     dell=Add_to_wishlist.objects.get(id=id)
@@ -65,53 +79,74 @@ def delete_wishlist(request,id):
 
 
 def cart(request):
-    cate_id=Add_to_cart.objects.all()
-    wish_count=Add_to_wishlist.objects.all().count()
-    cart_count=Add_to_cart.objects.all().count()
+        if "email" in request.session:
+            uid=User.objects.get(email=request.session["email"])
+            cart_item=Add_to_cart.objects.filter(user_id=uid)
 
-    total_price=0
-    for i in cate_id:
-        total_price += i.product_id.price * i.quantity
+     
+            wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
+            cart_count=Add_to_cart.objects.filter(user_id=uid).count()
+        
 
-
-    shipping_charge=50
-
-    if total_price==0:
-        shipping_charge=0
-    else:
-        shipping_charge=50
-
-    
-    grand_total= total_price + shipping_charge
-
-    con={"cate_id":cate_id,"wish_count":wish_count,"cart_count":cart_count,"total_price":total_price,"grand_total":grand_total,"shipping_charge":shipping_charge}
+            total_price=0
+            for i in cart_item:
+                total_price += i.product_id.price * i.quantity
 
 
-    return render(request,"cart.html",con)
+            shipping_charge=50
+
+            if total_price==0:
+                shipping_charge=0
+            else:
+                shipping_charge=50
+
+            
+            grand_total= total_price + shipping_charge
+
+
+
+
+            con={"wish_count":wish_count,"cart_count":cart_count,"total_price":total_price,"grand_total":grand_total,"shipping_charge":shipping_charge,"cart_item":cart_item}
+
+
+            return render(request,"cart.html",con)
+        else:
+            return render(request,"login.html")
+
+
 
 def add_cart(request,id):
-    pid=Product.objects.get(id=id)
+    if "email" in request.session:
+        uid=User.objects.get(email=request.session["email"])
 
-    cart_item=Add_to_cart.objects.filter(product_id=pid).first()
+        pid=Product.objects.get(id=id)
+        
+        
+        cart_item=Add_to_cart.objects.filter(product_id=pid,user_id=uid).first()
 
-    if cart_item :
 
-        cart_item.quantity += 1
-        cart_item.total_price = cart_item.quantity * cart_item.price
-        cart_item.save()
 
+        if cart_item :
+
+            cart_item.quantity += 1
+            cart_item.total_price = cart_item.quantity * cart_item.price
+            cart_item.save()
+
+        else:
+            Add_to_cart.objects.create(
+                product_id=pid,
+                user_id=uid,
+                price=pid.price,
+                name=pid.name,
+                quantity=1,
+                image=pid.image,
+                total_price=pid.price                        
+            )
+        return redirect("shop")
     else:
-        Add_to_cart.objects.create(
-            product_id=pid,
-            price=pid.price,
-            name=pid.name,
-            quantity=1,
-            image=pid.image,
-            total_price=pid.price
-                                   
-        )
+        return render(request,"login.html")
 
-    return redirect("shop")
+
 
 def quantity_plus(request,id):
     cart_item=Add_to_cart.objects.get(id=id)
@@ -150,16 +185,24 @@ def delete_item(request,id):
    
 
 def checkout(request):
-    wish_count=Add_to_wishlist.objects.all().count()
-    cart_count=Add_to_cart.objects.all().count()
-    check_id=Add_to_cart.objects.all()
+    if "email" in request.session:
+        uid=User.objects.get(email=request.session["email"])
+        cart_item=Add_to_cart.objects.filter(user_id=uid)
 
-    total_price=0
-    for i in check_id:
-        total_price += i.product_id.price * i.quantity
 
-    con={"wish_count":wish_count,"cart_count":cart_count,"check_id":check_id,"total_price":total_price,"billing_add":billing_add}
-    return render(request,"checkout.html",con)
+        wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
+        cart_count=Add_to_cart.objects.filter(user_id=uid).count()
+        check_id=Add_to_cart.objects.filter(user_id=uid)
+
+        total_price=0
+        for i in check_id:
+            total_price += i.product_id.price * i.quantity
+
+        con={"wish_count":wish_count,"cart_count":cart_count,"check_id":check_id,"total_price":total_price,"cart_item":cart_item}
+        return render(request,"checkout.html",con)
+
+    else:
+        return render(request,"login.html")
 
 
 def billing_add(request):
@@ -189,6 +232,7 @@ def billing_add(request):
                                    email=email,
                                    note=note)
             return redirect("checkout")
+        
         return render(request,"checkout.html")
         
     else:
@@ -197,41 +241,85 @@ def billing_add(request):
 
 
 def contact(request):
-    name=request.POST.get("name")
-    email=request.POST.get("email")
-    message=request.POST.get("message")
-    wish_count=Add_to_wishlist.objects.all().count()
-    cart_count=Add_to_cart.objects.all().count()
-    con={"wish_count":wish_count,"cart_count":cart_count}
+    if "email" in request.session:
+        uid=User.objects.get(email=request.session["email"])
+        cart_item=Add_to_cart.objects.filter(user_id=uid)
 
-    if name and email and message:
-        Contact.objects.create(name=name,email=email,message=message)
-        return redirect("index")
-    
-    return render(request,"contact.html",con)
+        name=request.POST.get("name")
+        email=request.POST.get("email")
+        message=request.POST.get("message")
+        wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
+        cart_count=Add_to_cart.objects.filter(user_id=uid).count()
+        con={"wish_count":wish_count,"cart_count":cart_count,"cart_item":cart_item}
+
+        if name and email and message:
+            Contact.objects.create(name=name,email=email,message=message)
+            return redirect("index")
+        
+        return render(request,"contact.html",con)
+    else:
+        return render(request,"login.html")
+
 
 def error(request):
-    wish_count=Add_to_wishlist.objects.all().count()
-    cart_count=Add_to_cart.objects.all().count()
-    con={"wish_count":wish_count,"cart_count":cart_count}
-    return render(request,"error.html",con)
+    if "email" in request.session:
+        uid=User.objects.get(email=request.session["email"])
+        cart_item=Add_to_cart.objects.filter(user_id=uid)
 
-def login(request):
-    if request.POST:       
-        email=request.POST["email"]
-        password=request.POST["password"]
+        wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
+        cart_count=Add_to_cart.objects.filter(user_id=uid).count()
+        con={"wish_count":wish_count,"cart_count":cart_count,"cart_item":cart_item}
+        return render(request,"error.html",con)
+    else:
+        return render(request,"login.html")
 
-        if email and password:
-            try:
-                User.objects.get(email=email,password=password)
-                return redirect("index")
-            except:
-                er={"e_msg":"Invalid Email or Password"}
-                return render(request,"login.html",er)
-    return render(request,"login.html")
+
+
+# def login(request):
+#     if request.POST:       
+#         email=request.POST["email"]
+#         password=request.POST["password"]
+
+#         if email and password:
+#             try:
+#                 User.objects.get(email=email,password=password)
+#                 return redirect("index")
+#             except:
+#                 er={"e_msg":"Invalid Email or Password"}
+#                 return render(request,"login.html",er)
+#     return render(request,"login.html")
         
  
-     
+
+
+def login(request):
+    if 'email' in request.session:
+        return render(request,"index.html")
+    if request.POST:
+        email=request.POST['email']
+        password=request.POST['password']
+        try:
+            uid=User.objects.get(email=email)
+            if uid.password==password:
+                # if uid.email==email:
+                    request.session['email']=uid.email
+                    return redirect("index")
+            else:
+                con={"msg":"password do not match"}
+                return render(request,"login.html",con)
+        except:
+            con={"msg":"email dose not match any register user" }
+            return render(request,"login.html",con)
+    else:
+        return render(request,"login.html")
+
+
+def logout(request):
+    del request.session["email"]
+    return render(request,"login.html")
+
+
+
 
 def register(request):
     if request.POST:
@@ -271,41 +359,55 @@ def price_filter(request):
     return render(request,"shop.html",con)
 
 def shop(request):
-    cid=Category.objects.all()
-    cat=request.GET.get("cat")
-    pid=Product.objects.all().order_by("-id")
-    wish_count=Add_to_wishlist.objects.all().count()
-    cart_count=Add_to_cart.objects.all().count()
-    sort_by=request.GET.get('sort_by')
-    wishlist_product=Add_to_wishlist.objects.all()
-    l1=[]
-    for i in wishlist_product:
-        l1.append(i.product_id.id)
-
-    if cat:
-        pid=Product.objects.filter(cate_id=cat)
-    elif sort_by == 'price_lth':
-        pid = Product.objects.all().order_by('price')  
-    elif sort_by == 'price_htl':
-        pid = Product.objects.all().order_by('-price')  
-    elif sort_by == 'name_atz':
-        pid = Product.objects.all().order_by('name')  
-    elif sort_by == 'name_zta':
-        pid = Product.objects.all().order_by('-name') 
-    else:
+    if "email" in request.session:
+        uid=User.objects.get(email=request.session["email"])
+        cid=Category.objects.all()
+        cat=request.GET.get("cat")
         pid=Product.objects.all().order_by("-id")
+        # cart_item=Add_to_cart.objects.filter(user_id=uid)
+        wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
+        cart_count=Add_to_cart.objects.filter(user_id=uid).count()
+        sort_by=request.GET.get('sort_by')
+        wishlist_product=Add_to_wishlist.objects.filter(user_id=uid)
+        l1=[]
+        for i in wishlist_product:
+            l1.append(i.product_id.id)
 
-    con={"cid":cid,"pid":pid,"cat":cat,"wish_count":wish_count,"cart_count":cart_count,"l1":l1,"sort_by":sort_by}
-    return render(request,"shop.html",con)
+        if cat:
+            pid=Product.objects.filter(cate_id=cat)
+        elif sort_by == 'price_lth':
+            pid = Product.objects.all().order_by('price')  
+        elif sort_by == 'price_htl':
+            pid = Product.objects.all().order_by('-price')  
+        elif sort_by == 'name_atz':
+            pid = Product.objects.all().order_by('name')  
+        elif sort_by == 'name_zta':
+            pid = Product.objects.all().order_by('-name') 
+        else:
+            pid=Product.objects.all().order_by("-id")
+
+        con={"cid":cid,"pid":pid,"cat":cat,"wish_count":wish_count,"cart_count":cart_count,"l1":l1,"sort_by":sort_by}
+        return render(request,"shop.html",con)
+
+    else:
+        return render(request,"login.html")
     
   
 
 
 def testimonial(request):
-    wish_count=Add_to_wishlist.objects.all().count()
-    cart_count=Add_to_cart.objects.all().count()
-    con={"wish_count":wish_count,"cart_count":cart_count}
-    return render(request,"testimonial.html",con)
+    if "email" in request.session:
+        uid=User.objects.get(email=request.session["email"])
+        cart_item=Add_to_cart.objects.filter(user_id=uid)
+
+        wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
+        cart_count=Add_to_cart.objects.filter(user_id=uid).count()
+        con={"wish_count":wish_count,"cart_count":cart_count,"cart_item":cart_item}
+        return render(request,"testimonial.html",con)
+    else:
+        return render(request,"login.html")
+
+
 
 
 import random

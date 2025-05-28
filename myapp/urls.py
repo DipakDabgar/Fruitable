@@ -39,6 +39,8 @@ urlpatterns = [
     path('contact', views.contact, name='contact'),
     path('error', views.error, name='error'),
     path('login', views.login, name='login'),
+    path('logout', views.logout, name='logout'),
+
     path('register', views.register, name='register'),
     path('shop_detail', views.shop_detail, name='shop_detail'),
     path('shop_detail1/<int:id>', views.shop_detail1, name='shop_detail1'),
