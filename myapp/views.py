@@ -1,5 +1,6 @@
 from django.shortcuts import render,HttpResponse,redirect
 from .models import*
+from django.core.paginator import Paginator
 
 # Create your views here.
 
@@ -26,7 +27,7 @@ def wishlist(request):
 
         wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
         cart_count=Add_to_cart.objects.filter(user_id=uid).count()
-        con={"wish_item":wish_item,"wish_count":wish_count,"cart_count":cart_count}
+        con={"wish_item":wish_item,"wish_count":wish_count,"cart_count":cart_count,"uid":uid}
         return render(request,"wishlist.html",con)
     else:
         return render(request,"login.html")
@@ -106,7 +107,7 @@ def cart(request):
 
 
 
-            con={"wish_count":wish_count,"cart_count":cart_count,"total_price":total_price,"grand_total":grand_total,"shipping_charge":shipping_charge,"cart_item":cart_item}
+            con={"wish_count":wish_count,"cart_count":cart_count,"total_price":total_price,"grand_total":grand_total,"shipping_charge":shipping_charge,"cart_item":cart_item,"uid":uid}
 
 
             return render(request,"cart.html",con)
@@ -198,7 +199,7 @@ def checkout(request):
         for i in check_id:
             total_price += i.product_id.price * i.quantity
 
-        con={"wish_count":wish_count,"cart_count":cart_count,"check_id":check_id,"total_price":total_price,"cart_item":cart_item}
+        con={"wish_count":wish_count,"cart_count":cart_count,"check_id":check_id,"total_price":total_price,"cart_item":cart_item,"uid":uid}
         return render(request,"checkout.html",con)
 
     else:
@@ -250,7 +251,7 @@ def contact(request):
         message=request.POST.get("message")
         wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
         cart_count=Add_to_cart.objects.filter(user_id=uid).count()
-        con={"wish_count":wish_count,"cart_count":cart_count,"cart_item":cart_item}
+        con={"wish_count":wish_count,"cart_count":cart_count,"cart_item":cart_item,"uid":uid}
 
         if name and email and message:
             Contact.objects.create(name=name,email=email,message=message)
@@ -268,7 +269,7 @@ def error(request):
 
         wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
         cart_count=Add_to_cart.objects.filter(user_id=uid).count()
-        con={"wish_count":wish_count,"cart_count":cart_count,"cart_item":cart_item}
+        con={"wish_count":wish_count,"cart_count":cart_count,"cart_item":cart_item,"uid":uid}
         return render(request,"error.html",con)
     else:
         return render(request,"login.html")
@@ -386,7 +387,12 @@ def shop(request):
         else:
             pid=Product.objects.all().order_by("-id")
 
-        con={"cid":cid,"pid":pid,"cat":cat,"wish_count":wish_count,"cart_count":cart_count,"l1":l1,"sort_by":sort_by}
+        paginator=Paginator(pid,1)  
+        page_number=request.GET.get("page",2)  
+        pid=paginator.get_page(page_number)
+        show_page=paginator.get_elided_page_range(page_number,on_each_side=1,on_ends=1)
+
+        con={"cid":cid,"pid":pid,"cat":cat,"wish_count":wish_count,"cart_count":cart_count,"l1":l1,"sort_by":sort_by,"uid":uid,"show_page":show_page}
         return render(request,"shop.html",con)
 
     else:
@@ -402,7 +408,7 @@ def testimonial(request):
 
         wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
         cart_count=Add_to_cart.objects.filter(user_id=uid).count()
-        con={"wish_count":wish_count,"cart_count":cart_count,"cart_item":cart_item}
+        con={"wish_count":wish_count,"cart_count":cart_count,"cart_item":cart_item,"uid":uid}
         return render(request,"testimonial.html",con)
     else:
         return render(request,"login.html")
@@ -467,4 +473,7 @@ def confirm_password(request):
         
     return render(request,"confirm_password.html")
 
-  
+def coupon(request):
+    coupon_list = Apply_coupon.objects.all()
+    con={'coupon_list': coupon_list}
+    return render(request, 'coupon_list.html',con )

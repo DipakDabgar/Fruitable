@@ -82,4 +82,9 @@ class Billing_details(models.Model):
     def __str__(self):
         return self.first_name
 
+class Apply_coupon(models.Model):
+    code=models.CharField(max_length=200,blank=True,null=True)
+    discount=models.IntegerField()
 
+    def __str__(self):
+        return self.code
