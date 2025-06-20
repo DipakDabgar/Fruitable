@@ -47,47 +47,47 @@
                                 <div class="col-md-12 col-lg-6">
                                     <div class="form-item w-100">
                                         <label class="form-label my-3">First Name<sup>*</sup></label>
-                                        <input type="text" name="first_name" class="form-control">
+                                        <input type="text" name="first_name" class="form-control" required>
                                     </div>
                                 </div>
                                 <div class="col-md-12 col-lg-6">
                                     <div class="form-item w-100">
                                         <label class="form-label my-3">Last Name<sup>*</sup></label>
-                                        <input type="text" name="last_name" class="form-control">
+                                        <input type="text" name="last_name" class="form-control" required>
                                     </div>
                                 </div>
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Company Name<sup>*</sup></label>
-                                <input type="text" name="company_name" class="form-control">
+                                <input type="text" name="company_name" class="form-control" required>
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Address <sup>*</sup></label>
-                                <input type="text" name="address" class="form-control" placeholder="House Number Street Name">
+                                <input type="text" name="address" class="form-control" placeholder="House Number Street Name" required>
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Town/City<sup>*</sup></label>
-                                <input type="text" name="city" class="form-control">
+                                <input type="text" name="city" class="form-control" required>
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Country<sup>*</sup></label>
-                                <input type="text" name="country" class="form-control">
+                                <input type="text" name="country" class="form-control" required>
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Postcode/Zip<sup>*</sup></label>
-                                <input type="text" name="pincode" class="form-control">
+                                <input type="text" name="pincode" class="form-control" required>
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Mobile<sup>*</sup></label>
-                                <input type="tel" name="mobile" class="form-control">
+                                <input type="tel" name="mobile" class="form-control" required>
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Email Address<sup>*</sup></label>
-                                <input type="email" name="email" class="form-control">
+                                <input type="email" name="email" class="form-control" required>
                             </div>
                             <hr>
                             <div class="form-item">
-                                <textarea type="text" name="note" class="form-control" spellcheck="false" cols="30" rows="11" placeholder="Order Notes (Optional)"></textarea>
+                                <textarea type="text" name="note" class="form-control" spellcheck="false" cols="30" rows="11" placeholder="Order Notes (Optional)" required></textarea>
                             </div>
                           
                         </div>
@@ -209,7 +209,7 @@
                            
                             <div class="row g-4 text-center align-items-center justify-content-center pt-4">
                                
-                                <button type="submit" class="btn border-secondary py-3 px-4 text-uppercase w-100 text-primary">Place Order</button>
+                                <a href="{% url 'order' %}"><button type="submit" class="btn border-secondary py-3 px-4 text-uppercase w-100 text-primary">Place Order</button></a>
                             </div>
                         </div>
                     </div>

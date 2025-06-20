@@ -88,3 +88,22 @@ class Apply_coupon(models.Model):
 
     def __str__(self):
         return self.code
+    
+
+class Order(models.Model):
+    user_id=models.ForeignKey(User,on_delete=models.CASCADE,blank=True,null=True)
+    product_id=models.ForeignKey(Product,on_delete=models.CASCADE,blank=True,null=True)
+    order_id=models.CharField(max_length=100,blank=True,null=True)
+    image=models.ImageField(upload_to="madia",blank=True,null=True)
+
+    name=models.CharField(max_length=100,blank=True,null=True)
+    price=models.IntegerField()
+    quantity=models.IntegerField(blank=True,null=True)
+    total_price=models.IntegerField(blank=True,null=True)
+    date_time=models.DateTimeField(auto_now_add=True,blank=True,null=True)
+
+    def __str__(self):
+        return self.name
+
+    
+

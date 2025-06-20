@@ -1,7 +1,7 @@
 from django.shortcuts import render,HttpResponse,redirect
 from .models import*
 from django.core.paginator import Paginator
-
+from django.utils import timezone
 # Create your views here.
 
 def home(request):
@@ -207,37 +207,60 @@ def checkout(request):
 
 
 def billing_add(request):
+    if "email" in request.session:
+        uid=User.objects.get(email=request.session["email"])
 
-    if request.POST:
-        first_name=request.POST["first_name"]
-        last_name=request.POST["last_name"]
-        company_name=request.POST["company_name"]
-        address=request.POST["address"]
-        city=request.POST["city"]
-        country=request.POST["country"]
-        pincode=request.POST["pincode"]
-        mobile=request.POST["mobile"]
-        email=request.POST["email"]
-        note=request.POST["note"]
+        dipak_id= Add_to_cart.objects.filter(user_id=uid)
 
-        if first_name and last_name and company_name and address and city and country and pincode and mobile and email and note:
-            
-            Billing_details.objects.create(first_name=first_name,
-                                   last_name=last_name,
-                                   company_name=company_name,
-                                   address=address,
-                                   city=city,
-                                   country=country,
-                                   pincode=pincode,
-                                   mobile=mobile,
-                                   email=email,
-                                   note=note)
-            return redirect("checkout")
+
+
+        if request.POST:
+            first_name=request.POST["first_name"]
+            last_name=request.POST["last_name"]
+            company_name=request.POST["company_name"]
+            address=request.POST["address"]
+            city=request.POST["city"]
+            country=request.POST["country"]
+            pincode=request.POST["pincode"]
+            mobile=request.POST["mobile"]
+            email=request.POST["email"]
+            note=request.POST["note"]
+
+            if first_name and last_name and company_name and address and city and country and pincode and mobile and email and note:
+                
+                Billing_details.objects.create(first_name=first_name,
+                                    last_name=last_name,
+                                    company_name=company_name,
+                                    address=address,
+                                    city=city,
+                                    country=country,
+                                    pincode=pincode,
+                                    mobile=mobile,
+                                    email=email,
+                                    note=note)
+
+             
+                for i in dipak_id:
+                    Order.objects.create(
+                        user_id=uid,
+                        name=i.name,
+                        image=i.image,
+                        quantity=i.quantity,
+                        price=i.price,
+                        total_price=i.price)
+                    i.delete()
+
+                    return redirect("order")
         
-        return render(request,"checkout.html")
+          
+            
+            return render(request,"order.html")
+            
+        else:
+            return render(request,"checkout.html")
         
     else:
-        return render(request,"checkout.html")
+        return render(request,"login.html")
 
 
 
@@ -387,7 +410,7 @@ def shop(request):
         else:
             pid=Product.objects.all().order_by("-id")
 
-        paginator=Paginator(pid,1)  
+        paginator=Paginator(pid,3)  
         page_number=request.GET.get("page",2)  
         pid=paginator.get_page(page_number)
         show_page=paginator.get_elided_page_range(page_number,on_each_side=1,on_ends=1)
@@ -477,3 +500,27 @@ def coupon(request):
     coupon_list = Apply_coupon.objects.all()
     con={'coupon_list': coupon_list}
     return render(request, 'coupon_list.html',con )
+
+
+
+def order(request):
+        if "email" in request.session:
+            uid=User.objects.get(email=request.session["email"])
+    
+
+     
+            wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
+            cart_count=Add_to_cart.objects.filter(user_id=uid).count()
+
+        
+            order_i= Order.objects.filter(user_id=uid)
+
+
+            con={"wish_count":wish_count,"cart_count":cart_count,"uid":uid,"order_i":order_i}
+
+
+            return render(request,"order.html",con)
+        else:
+            return render(request,"login.html")
+        
+

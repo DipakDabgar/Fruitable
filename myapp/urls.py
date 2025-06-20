@@ -51,6 +51,8 @@ urlpatterns = [
     path('confirm_password', views.confirm_password, name='confirm_password'),
     path('price_filter', views.price_filter, name='price_filter'),
     path('coupon', views.coupon, name='coupon'),
+    path('order', views.order, name='order'),
+
 
 
 
