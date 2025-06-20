@@ -512,8 +512,11 @@ def order(request):
             wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
             cart_count=Add_to_cart.objects.filter(user_id=uid).count()
 
+
         
             order_i= Order.objects.filter(user_id=uid)
+            
+
 
 
             con={"wish_count":wish_count,"cart_count":cart_count,"uid":uid,"order_i":order_i}
