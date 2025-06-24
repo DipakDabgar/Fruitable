@@ -10,7 +10,9 @@ admin.site.register(Contact)
 admin.site.register(Add_to_cart)
 admin.site.register(Add_to_wishlist)
 admin.site.register(Billing_details)
-admin.site.register(Apply_coupon)
+admin.site.register(Coupon)
+admin.site.register(User_coupon)
+
 admin.site.register(Order)
 
 

@@ -82,13 +82,6 @@ class Billing_details(models.Model):
     def __str__(self):
         return self.first_name
 
-class Apply_coupon(models.Model):
-    code=models.CharField(max_length=200,blank=True,null=True)
-    discount=models.IntegerField()
-
-    def __str__(self):
-        return self.code
-    
 
 class Order(models.Model):
     user_id=models.ForeignKey(User,on_delete=models.CASCADE,blank=True,null=True)
@@ -106,4 +99,19 @@ class Order(models.Model):
         return self.name
 
     
+class Coupon(models.Model):
+    coupon_code=models.CharField(max_length=200,blank=True,null=True)
+    discount=models.IntegerField()
+    expiry_time=models.DateTimeField(blank=True,null=True)
 
+    def __str__(self):
+        return self.coupon_code
+
+class User_coupon(models.Model):
+    user_id=models.ForeignKey(User,on_delete=models.CASCADE,blank=True,null=True)
+    coupon_id=models.ForeignKey(Coupon,on_delete=models.CASCADE,blank=True,null=True)
+    ex=models.BooleanField(blank=True,null=True)
+    expiry_time=models.DateTimeField(blank=True,null=True)
+
+    def __str__(self):
+        return self.coupon_id.coupon_code

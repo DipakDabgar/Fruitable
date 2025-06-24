@@ -2,6 +2,8 @@ from django.shortcuts import render,HttpResponse,redirect
 from .models import*
 from django.core.paginator import Paginator
 from django.utils import timezone
+import razorpay
+from django.contrib import messages
 # Create your views here.
 
 def home(request):
@@ -87,6 +89,9 @@ def cart(request):
      
             wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
             cart_count=Add_to_cart.objects.filter(user_id=uid).count()
+
+            ucid=User_coupon.objects.filter(user_id=uid,ex=True).order_by("-id").first()
+
         
 
             total_price=0
@@ -101,13 +106,17 @@ def cart(request):
             else:
                 shipping_charge=50
 
-            
-            grand_total= total_price + shipping_charge
+            discount=0
+            if ucid:
+                discount = ucid.coupon_id.discount
+                print("Discount Applied:", discount)
+             
+            grand_total= total_price + shipping_charge - discount 
 
 
 
 
-            con={"wish_count":wish_count,"cart_count":cart_count,"total_price":total_price,"grand_total":grand_total,"shipping_charge":shipping_charge,"cart_item":cart_item,"uid":uid}
+            con={"wish_count":wish_count,"cart_count":cart_count,"total_price":total_price,"grand_total":grand_total,"shipping_charge":shipping_charge,"cart_item":cart_item,"uid":uid,"discount":discount}
 
 
             return render(request,"cart.html",con)
@@ -183,8 +192,6 @@ def delete_item(request,id):
     dell.delete()
     return redirect("cart")
 
-   
-
 def checkout(request):
     if "email" in request.session:
         uid=User.objects.get(email=request.session["email"])
@@ -194,25 +201,69 @@ def checkout(request):
         wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
         cart_count=Add_to_cart.objects.filter(user_id=uid).count()
         check_id=Add_to_cart.objects.filter(user_id=uid)
+        ucid=User_coupon.objects.filter(user_id=uid,ex=True).order_by("-id").first()
 
         total_price=0
         for i in check_id:
             total_price += i.product_id.price * i.quantity
 
-        con={"wish_count":wish_count,"cart_count":cart_count,"check_id":check_id,"total_price":total_price,"cart_item":cart_item,"uid":uid}
+        shipping_charge=50
+
+        if total_price==0:
+            shipping_charge=0
+        else:
+            shipping_charge=50
+
+        discount=0
+        if ucid:
+            discount = ucid.coupon_id.discount
+            # print("Discount Applied:", discount)
+
+        grand_total= total_price + shipping_charge - discount
+
+
+        client = razorpay.Client(auth=('rzp_test_uqhoYnBzHjbvGF', 'jEhBs6Qp9hMeGfq5FyU45cVi'))
+        response = client.order.create({
+            'amount': int(grand_total * 100),
+            'currency': 'INR',
+            'payment_capture': 1
+        })
+        print("Razorpay response:", response)
+
+        con={"wish_count":wish_count,"cart_count":cart_count,"check_id":check_id,"total_price":total_price,"cart_item":cart_item,"uid":uid,"response":response,"shipping_charge":shipping_charge,"discount":discount,"grand_total":grand_total}
         return render(request,"checkout.html",con)
 
     else:
         return render(request,"login.html")
+# def checkout(request):
+#     if 'email'in request.session:
+#         uid=User.objects.get(email=request.session['email'])
+#         wish_count=Add_to_wishlist.objects.filter(user_id=uid).count()
+#         cart_count=Add_to_cart.objects.filter(user_id=uid).count()
+#         check_id=Add_to_cart.objects.filter(user_id=uid)
+        
+#         total_price=0
+#         for i in check_id:
+#             total_price+=i.product_id.price*i.quantity
+            
+#         client = razorpay.Client(auth=('rzp_test_uqhoYnBzHjbvGF', 'jEhBs6Qp9hMeGfq5FyU45cVi'))
+#         response = client.order.create({
+#             'amount': int(total_price * 100),
+#             'currency': 'INR',
+#             'payment_capture': 1
+#         })
+#         print("Razorpay response:", response)
+        
+#         con={"wish_count":wish_count,"cart_count":cart_count,"check_id":check_id,"total_price":total_price,"uid":uid,"response":response}
+#         return render(request, "checkout.html",con)
+#     else:
+#         return render(request,"login.html")
 
 
 def billing_add(request):
     if "email" in request.session:
         uid=User.objects.get(email=request.session["email"])
-
-        dipak_id= Add_to_cart.objects.filter(user_id=uid)
-
-
+        cart_item=Add_to_cart.objects.filter(user_id=uid)
 
         if request.POST:
             first_name=request.POST["first_name"]
@@ -226,42 +277,131 @@ def billing_add(request):
             email=request.POST["email"]
             note=request.POST["note"]
 
-            if first_name and last_name and company_name and address and city and country and pincode and mobile and email and note:
+            total_price=0
+            for i in cart_item:
+                total_price += i.product_id.price * i.quantity
                 
-                Billing_details.objects.create(first_name=first_name,
-                                    last_name=last_name,
-                                    company_name=company_name,
-                                    address=address,
-                                    city=city,
-                                    country=country,
-                                    pincode=pincode,
-                                    mobile=mobile,
-                                    email=email,
-                                    note=note)
+            shipping_charge=50
 
+            if total_price==0:
+                shipping_charge=0
+            else:
+                shipping_charge=50
+                          
+            grand_total= total_price + shipping_charge   
+                
+            Billing_details.objects.create(first_name=first_name,
+                                last_name=last_name,
+                                company_name=company_name,
+                                address=address,
+                                city=city,
+                                country=country,
+                                pincode=pincode,
+                                mobile=mobile,
+                                email=email,
+                                note=note)
+
+            client = razorpay.Client(auth=('rzp_test_uqhoYnBzHjbvGF', 'jEhBs6Qp9hMeGfq5FyU45cVi'))
+            response = client.order.create({'amount': int(total_price * 100),'currency': 'INR','payment_capture': 1})
+            print("Razorpay response:", response)
              
-                for i in dipak_id:
-                    Order.objects.create(
-                        user_id=uid,
-                        name=i.name,
-                        image=i.image,
-                        quantity=i.quantity,
-                        price=i.price,
-                        total_price=i.price)
-                    i.delete()
+            for i in cart_item:
+                Order.objects.create(
+                    user_id=uid,
+                    name=i.name,
+                    image=i.image,
+                    quantity=i.quantity,
+                    price=i.price,
+                    total_price=i.price*i.quantity)
+                i.delete()
 
-                    return redirect("order")
-        
-          
+                return redirect("order")
+                
+            con={"total_price":total_price,"shipping_charge":shipping_charge,"grand_total":grand_total,"response":response,"cart_item":cart_item,"uid":uid}
+
             
-            return render(request,"order.html")
+            return render(request,"order.html",con)
             
         else:
             return render(request,"checkout.html")
         
     else:
         return render(request,"login.html")
+# def billing_add(request):
+#     if 'email' in request.session:
+#         uid=User.objects.get(email=request.session['email'])
+#         cart_items= Add_to_cart.objects.filter(user_id=uid)
+        
+#         if request.POST:
+#             first_name=request.POST['first_name']
+#             last_name=request.POST['last_name']
+#             company_name=request.POST['company_name']
+#             address=request.POST['address']
+#             city=request.POST['city']
+#             country=request.POST['country']
+#             pincode=request.POST['pincode']
+#             mobile=request.POST['mobile']
+#             email=request.POST['email']
+            
+#             total_price=0
+       
+#             for i in cart_items:
+#                 total_price += i.product_id.price*i.quantity
+        
+#             shipping_charge=50
+        
+#             if total_price==0:
+#                 shipping_charge=0
+#             else:
+#                 shipping_charge=50
+             
+#             grand_total=total_price+shipping_charge
+            
+#             Billing_details.objects.create(user_id=uid,first_name=first_name,last_name=last_name,
+#                                             company_name=company_name,address=address,
+#                                             city=city,country=country,pincode=pincode,
+#                                             mobile=mobile,email=email
+#                                             )
+            
+#             # Razorpay integration
+#             client = razorpay.Client(auth=('rzp_test_uqhoYnBzHjbvGF', 'jEhBs6Qp9hMeGfq5FyU45cVi'))
+#             response = client.order.create({
+#                 'amount': int(total_price * 100),
+#                 'currency': 'INR',
+#                 'payment_capture': 1
+#             })
+#             print("Razorpay response:", response)
+            
+#             for i in cart_items:
+                
+#                 Order.objects.create(
+#                                     user_id=uid,
+#                                     name=i.name,
+#                                     price=i.price,
+#                                     image=i.image,
+#                                     quantity=i.quantity,
+#                                     total_price=i.price      
+#                 )
+                
+#                 i.delete()
+                
+#                 # return redirect("order")
+            
+#             con={"uid":uid,
+#                  "cart_items":cart_items,
+#                  "total_price":total_price,
+#                  "shipping_charge":shipping_charge,
+#                  "response":response,
+#                  "grand_total":grand_total
+#                  }
+            
+#             return render(request, "order.html",con)
 
+#         else:
+#             return render(request, "checkout.html")
+        
+#     else:
+#         return render(request,"login.html")
 
 
 def contact(request):
@@ -496,10 +636,36 @@ def confirm_password(request):
         
     return render(request,"confirm_password.html")
 
-def coupon(request):
-    coupon_list = Apply_coupon.objects.all()
-    con={'coupon_list': coupon_list}
-    return render(request, 'coupon_list.html',con )
+def apply_coupon(request):
+    uid=User.objects.get(email=request.session["email"])
+    if request.POST:
+        coupon_code=request.POST.get('code')
+
+        ccid=Coupon.objects.filter(coupon_code=coupon_code).exists()
+
+        if ccid:
+            ccid1=Coupon.objects.get(coupon_code=coupon_code)
+            ucid=User_coupon.objects.filter(user_id=uid,coupon_id=ccid1,ex=True).exists()
+            if ucid:
+                messages.info(request,"You have already used this Coupon")
+                return redirect("cart")
+            else:
+                User_coupon.objects.create(user_id=uid,coupon_id=ccid1,ex=True)
+                messages.success(request,"oupon applied successfully!")
+                return redirect("cart")
+        else:
+            messages.error(request,"Invalid coupon code.")
+            return redirect("cart")
+    else:
+        return render(request,"cart.html")
+
+                
+
+
+    
+
+   
+    return render(request, 'cart.html' )
 
 
 
