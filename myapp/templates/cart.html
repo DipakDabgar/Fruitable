@@ -36,7 +36,8 @@
 
         <!-- Cart Page Start -->
          <br>
-        <h2 style="text-align: center;color:red;">{% for msg in message %}
+         <br>
+        <h2 style="text-align: center;color:red;">{% for msg in messages %}
             {{msg}}
             {% endfor %}
         </h2>
@@ -130,7 +131,7 @@
                                 <div class="d-flex justify-content-between">
                                     <h5 class="mb-0 me-4">Coupon :</h5>
                                     <div class="">
-                                        <p class="mb-0">Flat rate: ₹-{{discount}} /-</p>
+                                        <p class="mb-0">Flat rate: ₹- {{discount}} /-</p>
                                     </div>
                                 </div>
                                 
@@ -138,7 +139,7 @@
                                 
                             </div>
                             <div class="py-4 mb-4 border-top border-bottom d-flex justify-content-between">
-                                <h5 class="mb-0 ps-4 me-4">Total</h5>
+                                <h5 class="mb-0 ps-4 me-4">Total :</h5>
                                 <p class="mb-0 pe-4">₹{{grand_total}} /-</p>
                             </div>
                             <a href="{% url 'checkout' %}">

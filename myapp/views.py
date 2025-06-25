@@ -93,6 +93,40 @@ def cart(request):
 
             ucid=User_coupon.objects.filter(user_id=uid,ex=True).order_by("-id").first()
 
+# <---------------------------------------new code start------------------------->
+
+            # prod = Add_to_cart.objects.filter(user_id=uid)
+            # total_price = sum(item.total_price for item in cart_item)
+            # shipping_charge = 50
+            # discount = 0
+            # grand_total = total_price + shipping_charge - discount
+
+            # print(ucid)
+            # l1 = []
+            # total_price = 0
+            # shipping_charge = 0
+            # total_price = 0
+            # discount=0
+            # for i in prod:
+            #     a = i.quantity * i.price
+            #     l1.append(a)
+            #     total_price = sum(l1)
+            #     shipping_charge     = 50
+            # grand_total = total_price +  shipping_charge 
+            # if ucid == None:
+            #     discount=0
+            # else:  
+            #     discount=ucid.coupon_id.discount
+            #     grand_total-=ucid.coupon_id.discount
+            #     print(ucid.coupon_id.discount)
+            # if cart_item.count() == 0 and ucid != None:
+            #     ucid.ex=False
+            #     discount=0
+            #     grand_total=0
+            #     ucid.save()
+
+# <---------------------------------------new code end------------------------->
+
         
 
             total_price=0
@@ -107,10 +141,24 @@ def cart(request):
             else:
                 shipping_charge=50
 
-            discount=0
-            if ucid:
-                discount = ucid.coupon_id.discount
-                print("Discount Applied:", discount)
+# ======================================================================
+            # discount=0
+            # if ucid:
+            #     discount = ucid.coupon_id.discount
+            #     print("Discount Applied:", discount)
+# ====================================================================
+
+            if ucid == None:
+                discount=0
+            else:  
+                discount=ucid.coupon_id.discount
+                total_price-=ucid.coupon_id.discount
+                print(ucid.coupon_id.discount)
+            if cart_item.count() == 0 and ucid != None:
+                ucid.ex=False
+                discount=0
+                total_price=0
+                ucid.save()
              
             grand_total= total_price + shipping_charge - discount 
 
@@ -281,7 +329,7 @@ def billing_add(request):
                                 note=note)
 
             client = razorpay.Client(auth=('rzp_test_uqhoYnBzHjbvGF', 'jEhBs6Qp9hMeGfq5FyU45cVi'))
-            response = client.order.create({'amount': int(total_price * 100),'currency': 'INR','payment_capture': 1})
+            response = client.order.create({'amount': int(grand_total * 100),'currency': 'INR','payment_capture': 1})
             print("Razorpay response:", response)
           
             for i in cart_item:
@@ -557,7 +605,7 @@ def apply_coupon(request):
                 return redirect("cart")
             else:
                 User_coupon.objects.create(user_id=uid,coupon_id=ccid1,ex=True)
-                messages.success(request,"oupon applied successfully!")
+                messages.success(request,"Coupon applied successfully!")
                 return redirect("cart")
         else:
             messages.error(request,"Invalid coupon code.")
