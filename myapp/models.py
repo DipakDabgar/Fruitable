@@ -100,7 +100,7 @@ class Order(models.Model):
 
     
 class Coupon(models.Model):
-    coupon_code=models.CharField(max_length=200,blank=True,null=True)
+    coupon_code=models.CharField(max_length=100,blank=True,null=True)
     discount=models.IntegerField()
     expiry_time=models.DateTimeField(blank=True,null=True)
 
